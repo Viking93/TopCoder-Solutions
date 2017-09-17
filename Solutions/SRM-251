@@ -1,0 +1,123 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <map>
+#include <algorithm>
+
+using namespace std;
+
+class Country
+{
+	public:
+	
+	string name;
+	int bestScore;
+	int worstScore;
+	
+	Country(string name, int bestScore, int worstScore){
+		this->name = name;
+		this->bestScore = bestScore;
+		this->worstScore = worstScore;
+	}
+};
+
+bool compareCountry(Country a, Country b) {return a.bestScore > b.bestScore; }
+bool compareWorstCountry(Country a, Country b) {return a.worstScore > b.worstScore; }
+
+int getRank(vector<Country> countries, string country){
+
+	for(int i = 0 ; i < countries.size(); i++){
+		if (countries[i].name == country)
+			return i + 1;	
+	}
+	
+	return -1;
+}
+
+class CountriesRanklist
+{
+	map<string, int> countryTotalScore;
+	map<string, int> countryRemContestants;
+	int maxNumContestants;
+	vector<Country> countries;
+	
+	public:
+	
+	int getBestScore(string country, int worstScore){
+		int remContestants = countryRemContestants.find(country)->second;
+	
+		return ((worstScore - 1) *  remContestants) + countryTotalScore.find(country)->second;
+	}
+	
+	vector <string> findPlaces(vector <string> knownPoints){
+		
+		int worstScore = -1;
+		vector<string>::iterator it;
+		
+		maxNumContestants = 4;
+			
+		for(it = knownPoints.begin(); it < knownPoints.end(); it++){
+			
+			istringstream in(*it);
+			string country, contestant;
+			int score;	
+			
+			in >> country >> contestant >> score;
+			
+			// calculates worst score in the known list 
+			if ( worstScore < score)
+				worstScore = score;				
+			
+			map<string,int>::iterator prev = countryTotalScore.find(country);
+			
+			if (prev != countryTotalScore.end())
+				prev -> second = prev -> second + score;
+			else
+				countryTotalScore.insert(pair<string, int>(country, score));
+			
+			prev = countryRemContestants.find(country);
+			
+			if (prev != countryRemContestants.end())
+				prev -> second = prev -> second - 1;
+			else 
+				countryRemContestants.insert(pair<string, int>(country, maxNumContestants - 1));
+		}
+			
+		map<string, int>::iterator m;
+		vector<string> result;
+		
+		for(m=countryTotalScore.begin(); m != countryTotalScore.end(); m++){
+			string country = m -> first;
+			int bestScore = getBestScore(country, worstScore);
+			
+			countries.push_back(Country(country, bestScore, m->second));
+		}
+		
+		sort(countries.begin(), countries.end(), compareCountry);
+		
+		vector<Country>::iterator s;
+		vector<Country> worstCountries = countries;
+		
+		sort(worstCountries.begin(), worstCountries.end(), compareWorstCountry);
+		
+		map<string, pair<int,int>> tempResult;
+		
+		for(int i = 0 ; i < countries.size(); i++){
+			pair<int,int> bestWorstRank(i + 1, getRank(worstCountries, countries[i].name));
+			
+			tempResult.insert(pair<string,pair<int,int>>(countries[i].name, bestWorstRank));
+		}
+		
+		map<string, pair<int,int>>::iterator rit;
+		
+		for(rit=tempResult.begin();rit!=tempResult.end();rit++){
+			pair<int,int> bestWorstRank = rit->second;
+			string space=" ";
+			string best = to_string(bestWorstRank.first);
+			string worst = to_string(bestWorstRank.second);
+			result.push_back(rit->first + space + best + space + worst);
+		}
+		return result;
+	}
+};

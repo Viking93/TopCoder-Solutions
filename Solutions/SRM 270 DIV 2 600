@@ -1,0 +1,48 @@
+#include <iostream>
+
+using namespace std;
+
+class TippingWaiters
+{
+	public:
+	
+	pair<int,int> calcTip(int finalCash){
+		
+		int l, u;
+		
+		l = 0.05 * finalCash;
+		u = 0.1 * finalCash;
+		
+		return pair<int, int>(l,u);
+	}
+	
+	int getNearestNumDivBy5(int n){
+		int rem = n % 5;
+		
+		return n + (5 - rem);
+	}
+	
+	int findPossiblePayments(int bill, int minCash, int maxCash){
+		
+		int roundedBill = bill;
+		
+		if (minCash % 5 != 0)
+			roundedBill = getNearestNumDivBy5(minCash);
+				
+		if (roundedBill >  maxCash)
+			return 0;
+			
+		pair<int,int> estimatedTip = calcTip(roundedBill);
+		
+		int tip = roundedBill - bill;
+		
+		if (tip < estimatedTip.first || tip > estimatedTip.second)
+			return 0;
+		else
+			return 1 + findPossiblePayments(bill, getNearestNumDivBy5(roundedBill), maxCash);
+	}
+	
+	int possiblePayments(int bill, int cash){
+		return findPossiblePayments(bill,bill,cash);
+	}
+};

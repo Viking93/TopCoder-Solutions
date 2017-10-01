@@ -1,0 +1,104 @@
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <vector>
+#include <string>
+#include <queue>
+
+using namespace std;
+
+class node {
+    public:
+    int x, y, steps;
+    
+    node(int a, int b, int s){ x=a; y=b; steps=s;}
+};
+
+class Escape{
+    bool visited[501][501];
+    int cost[501][501];
+    bool path[501][501];
+    
+    public:
+    
+    void init(){
+        for(int i =0;i<=500;i++)
+            for(int j=0;j<=500; j++){
+            	visited[i][j]=false;
+            	cost[i][j]=0;
+            	path[i][j]=true;
+        }
+    }
+    
+    void fill(int x1, int y1, int x2, int y2, int co, bool pass){
+        
+        int a,b,c,d;
+        
+        a=max(x1,x2);
+        b=max(y1,y2);
+        c=min(x1,x2);
+        d=min(y1,y2);
+        
+        for(int i=c;i<=a;i++)
+            	for(int j=d;j<=b;j++){
+            		path[i][j]=pass;
+            		cost[i][j]=co;
+        }
+            		
+    }
+    
+    int bfs(node s, node e){
+        queue<node> q;
+        q.push(s);
+        
+        while(!q.empty()){
+            node t = q.front();
+            q.pop();
+            
+           // cout << t.x <<" " <<t.y<<" ";
+            if(t.x == e.x && t.y == e.y)
+                return t.steps;
+            
+            if(t.x < 0 || t.x > 500 || t.y <0 || t.y >500) continue;
+            
+            if(!visited[t.x][t.y]){
+                visited[t.x][t.y] = true;
+
+                if(path[t.x-1][t.y]) q.push(node(t.x-1,t.y,t.steps+cost[t.x-1][t.y]));
+                if(path[t.x+1][t.y]) q.push(node(t.x+1,t.y,t.steps+cost[t.x+1][t.y]));
+                if(path[t.x][t.y-1]) q.push(node(t.x,t.y-1,t.steps+cost[t.x][t.y-1]));
+                if(path[t.x][t.y+1]) q.push(node(t.x,t.y+1,t.steps+cost[t.x][t.y+1]));
+            }
+            
+            
+        }
+        
+        return -1;
+        
+    }
+    
+    int lowest(vector <string> harmful, vector <string> deadly){
+        init();
+        for(int i=0;i<harmful.size();i++){
+            istringstream in(harmful[i]);
+            int x1=0,y1=0,x2=0,y2=0;
+            
+            in>>x1>>y1>>x2>>y2;
+
+            fill(x1,y1,x2,y2,1,true);
+        }
+        
+        for(int i=0;i<deadly.size();i++){
+            istringstream in(deadly[i]);
+            int x1=0,y1=0,x2=0,y2=0;
+            
+            in>>x1>>y1>>x2>>y2;
+            
+            fill(x1,y1,x2,y2,-1,false);
+        }
+
+       
+        return bfs(node(0,0,0), node(500,500,0));
+    }
+    
+};

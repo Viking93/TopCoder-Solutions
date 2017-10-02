@@ -1,0 +1,71 @@
+#include<iostream>
+#include<queue>
+#include<string>
+#include<vector>
+#include<sstream>
+
+using namespace std;
+
+class node{
+    public:
+    
+    int level, easting, dmfs;
+    
+    node(int l, int e, int d){
+        level=l;
+        easting=e;
+        dmfs=d;
+    }
+};
+
+struct compare{
+    bool operator() (const node &left, const node &right){
+        return left.dmfs > right.dmfs;
+    }
+};
+
+class DungeonEscape{
+    bool visited[50][50];
+    
+    public:
+    
+     int exitTime(vector <string> up, vector <string> down, vector <string> east, vector <string> west, int startLevel, int startEasting){
+         priority_queue<node,vector<node>,compare> pq;
+         pq.push(node(startLevel,startEasting,0));
+         
+         int l = up.size();
+         int b = up[0].size();
+         vector<int> filled(51);
+         int j = 1;
+         for(int i =l ;i >=1; i--) {
+             filled[i] = b * j;
+             j++;
+          }
+         while(!pq.empty()){
+             node top = pq.top();
+             pq.pop();
+
+             if(top.level < 0)
+                 return top.dmfs;
+             
+             if(filled[top.level+1] <= top.dmfs) continue;
+             if(top.level >= l || top.easting >= b || top.easting < 0) continue;
+             
+             if(!visited[top.level][top.easting]){
+                 visited[top.level][top.easting]=true;
+                 
+                 if(up[top.level][top.easting] != 'x')
+	                 pq.push(node(top.level-1,top.easting,top.dmfs+up[top.level][top.easting]-'0')); //up
+                 if(down[top.level][top.easting] != 'x')
+	                 pq.push(node(top.level+1,top.easting,top.dmfs+down[top.level][top.easting]-'0')); //down
+                 if(east[top.level][top.easting] != 'x')
+	                 pq.push(node(top.level,top.easting+1,top.dmfs+east[top.level][top.easting]-'0')); //east
+                 if(west[top.level][top.easting] != 'x')
+	                 pq.push(node(top.level,top.easting-1,top.dmfs+west[top.level][top.easting]-'0')); //west                     
+                
+             }
+         }
+             
+         return -1;
+     }
+};

@@ -1,0 +1,61 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+class GoldMine {
+    
+    int calc_profit(int ores, int miners){
+        if(ores > miners)
+            return 60 * miners;
+        else if (ores == miners)
+            return 50 * miners;
+        else
+            return (50 * ores) - (20 * (miners - ores));
+    }
+    
+    int profit(int ores, int miners, string ps){
+        int p =0 ;
+        istringstream ss(ps);
+        string item;
+        int i = 0;
+        while(getline(ss,item,',') && i <= ores){
+            p+=(calc_profit(i,miners) * stoi(item) * 0.01);
+            i++;
+        }
+        
+        return p;
+    }
+    
+    public:
+    vector<int> getAllocation(vector<string> mines, int miners){
+        vector<int> result(mines.size());
+        vector<int> profits(mines.size());
+
+        for(int workers = 1 ;workers <= miners; workers++){
+            int indx = 0;
+            for(int k = 0; k < mines.size(); k++)
+                	if(result[k] < 6) { indx = k; break;}
+                
+                		
+            int p = profit(6,result[indx]+1,mines[indx]) - profits[indx];
+
+            for(int j = indx + 1 ; j < mines.size(); j++){
+                int p_curr = profit(6, result[j] + 1, mines[j]) - profits[j];
+                
+                if(p_curr > p){
+                    p = p_curr;
+                    indx = j;
+                }
+            }
+        
+        	profits[indx] = profits[indx] + p;
+        	result[indx]++;
+            
+    	}
+
+        return result;
+    }
+};
